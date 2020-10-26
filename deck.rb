@@ -11,7 +11,7 @@ class Deck
   def initialize
     @cards = []
     self.class.deck_set.each do |rank, symbol|
-      @cards << Card.new(rank, symbol)
+      @cards << Card.new(rank, symbol, self.class.card_back)
     end
   end
 
