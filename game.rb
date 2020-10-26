@@ -15,8 +15,8 @@ class Game
     @bank = 0
   end
 
-  def add_gamer(gamer)
-    self.gamers << gamer
+  def add_gamer(name, bank, type = 'bot')
+    self.gamers << Gamer.new(name, bank, type)
   end
 
   def deal_card(gamer)

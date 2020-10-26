@@ -1,11 +1,13 @@
 class Gamer
   attr_accessor :name, :score, :hand, :bank
+  attr_reader :type
 
-  def initialize(name, bank)
+  def initialize(name, bank, type = 'computer')
     @name = name
     @score = 0
     @hand = []
     @bank = bank
+    @type = type
   end
 
   def make_bet(bet)
@@ -14,13 +16,15 @@ class Gamer
   end
 
   def show_cards
-    print "#{self.name}:    "
-    self.hand.each { |card| print "[#{card.face}]"}
+    @view = []
+    self.hand.each { |card| @view << "[#{card.face}]"}
+    @view.join
   end
 
   def show_cards_back
-    print "#{self.name}:    "
-    self.hand.each { |card| print "[#{card.back}]"}
+    @view = []
+    self.hand.each { |card| @view << "[#{card.back}]"}
+    @view.join
   end
 
   def recive_card(card)
