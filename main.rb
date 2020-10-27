@@ -1,12 +1,24 @@
 require_relative 'game'
+require_relative 'bot_action'
 
 class Desk
-  attr_accessor :game
+  include BotAction
+
+  attr_accessor :game, :gamers, :person, :bot
 
   @BANK_LIMIT = 100
+  @BET = 10
+  @WIN_SCORE = 21
 
   class << self
-    def delay(period = 0.8)
+    def getch
+      system("stty raw -echo")
+      STDIN.getc
+    ensure
+      system("stty -raw echo")
+    end
+
+    def delay(period = 0.1)
       sleep(period)
     end
 
@@ -14,21 +26,68 @@ class Desk
       send(method, message)
     end
 
-    def user_input(message, result = "Your input:")
+    def user_input(message,
+                   input_method = -> { getch },
+                   result = '')
       print "#{message}: "
-      @input = gets.chomp.strip
+      @input = input_method.call
       puts "#{result} #{@input}"
+      @input = "Unnamed" if @input == ''
       @input
     end
 
-    def deal_cards
-      @gamers = @game.gamers
-      @person = @gamers.first
-      @bot = @gamers.last
+    def take_seats
+      @game.add_gamer(
+        user_input(
+          '    Write your name',
+          -> {gets.chomp.strip},
+          '    Welcome'
+          ),
+        @BANK_LIMIT,
+        'person'
+        )
+      @game.add_gamer('SkyNET', @BANK_LIMIT)
+    end
+
+    def game_action(method)
+      @method = @game.method("#{method}".to_sym)
       @gamers.each do |gamer|
-        @game.deal_card(gamer)
+        @method.call(gamer)
         draw_desk(@person.show_cards, @bot.show_cards_back)
         delay
+      end
+    end
+
+    def place_bets
+      @gamers.each do |gamer|
+        @game.place_bet(gamer, @BET)
+        draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
+        delay
+      end
+    end
+
+    def decide_winner
+      if @person.score != @bot.score
+        case @gamers.select { |gamer| gamer.score > @WIN_SCORE }.size
+        when 2 then @gamers.min_by { |gamer| (@WIN_SCORE - gamer.score).abs }
+        when 1 then @gamers.min_by { |gamer| gamer.score }
+        when 0 then @gamers.max_by { |gamer| gamer.score }
+        end
+      else
+        @gamers
+      end
+    end
+
+    def break_bank
+      @winner = decide_winner
+      if @winner.class == Array
+        @half = @game.bank / @winner.size
+        @winner.each do |gamer|
+          @game.bank = @half
+          @game.break_bank(gamer)
+        end
+      else
+        @game.break_bank(@winner)
       end
     end
 
@@ -46,60 +105,125 @@ class Desk
       )
     end
 
-    def draw_desk(gamer_hand = '', bot_hand = '')
+    def draw_desk(gamer_hand = '', bot_hand = '', gamer_score = '', bot_score = '')
       draw_footer
-      @bot = @game.gamers.last
-      @person = @game.gamers.first
       puts(
-        "                #{@bot.name} (#{@bot.type})    \n"\
+        "                   #{@bot.name}: #{@bot.bank}$    \n"\
         "                ----------------               \n"\
-        "              --                --             \n"\
+        "                  #{bot_score}                 \n"\
         "             --                  --            \n"\
         "                  #{bot_hand}                  \n"\
         "            --                    --           \n"\
+        "                 bank: #{@game.bank}$               \n"\
         "            --                    --           \n"\
         "                  #{gamer_hand}                \n"\
         "             --                  --            \n"\
-        "              --                --             \n"\
+        "                  #{gamer_score}               \n"\
         "                ----------------               \n"\
-        "                 #{@person.name}               \n"\
+        "                   #{@person.name}: #{@person.bank}$\n"\
         "\n\n"
       )
     end
 
-    def begining
-      draw_footer
+    def round
       @game = Game.new
-      @game.deck.shuffle_cards
-      @game.add_gamer(user_input('Write your name', 'Welcome'), @BANK_LIMIT, 'persons')
-      @game.add_gamer('SkyNET', @BANK_LIMIT)
+      take_seats
+      @gamers = @game.gamers
+      @bot = @gamers.last
+      @person = @gamers.first
+      @bank = @game.bank
 
-      delay
-      draw_desk
-      delay(1)
-      2.times { deal_cards }
-      user_input('Write your name')
+      step
     end
 
-    def menu
+    def step
+      @switch = true
+      begin
+        @game.deck = Deck.new
+        @game.deck.shuffle_cards
+        draw_desk
+        delay
+
+        2.times { game_action('deal_card') }
+        game_action('score_set')
+        place_bets
+
+        menu_2
+        game_action('score_set')
+        draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
+
+        menu_3
+        draw_desk(@person.show_cards, @bot.show_cards, @person.score, @bot.score)
+
+        break_bank
+        draw_desk(@person.show_cards, @bot.show_cards, @person.score, @bot.score)
+        delay(1)
+
+        game_action('fold')
+
+        @key = user_input(
+          "     press \"Enter\" to continue\n" \
+          "     press \"Esc\" to return to the main menu\n" \
+          )
+        @switch = false if @key == "\e" || @gamers.collect(&:bank).include?(0)
+      end while @switch
+    end
+
+    def menu(header = "  Select to continue")
       begin
         draw_footer
-        show_message("Select to continue")
+        show_message("  #{header}")
         show_message
         show_message
-        @choice = user_input(
-          "   press 1 to start\n" \
-          "   press 0 to exit\n" \
+        @key = user_input(
+          "     press \"Enter\" to start\n" \
+          "     press \"Esc\" to exit\n" \
           )
-        delay
-        begining if @choice == "1"
-        break if @choice == "0"
+        round if @key == "\r"
+        break if @key == "\e"
       end while true
     end
+
+    def menu_2(header = "  Select to continue")
+      @gamers = @game.gamers
+      @person = @gamers.first
+      @bot = @gamers.last
+      begin
+        draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
+        show_message("  #{header}")
+        show_message
+        show_message
+        if @person.hand.size < 3
+          @key = user_input(
+            "     press \"Enter\" to deal card\n" \
+            "     press \"Space\" to skip turn\n" \
+            )
+        end
+        @game.deal_card(@person) if @key == "\r"
+        if @key == " " || @person.hand.size == 3
+          bot_turn(@bot, @game)
+        end
+        break
+      end while true
+    end
+
+    def menu_3(header = "  Select to continue")
+      begin
+        draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
+        show_message("  #{header}")
+        show_message
+        show_message
+        @key = user_input(
+          "     press \"Enter\" to open\n" \
+          )
+        break if @key == "\r"
+      end while true
+    end
+
+    def start
+      Desk.menu
+    end
   end
-
-
-
-  #draw_footer
-  #
 end
+
+Desk.start

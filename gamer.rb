@@ -2,7 +2,7 @@ class Gamer
   attr_accessor :name, :score, :hand, :bank
   attr_reader :type
 
-  def initialize(name, bank, type = 'computer')
+  def initialize(name, bank, type)
     @name = name
     @score = 0
     @hand = []

@@ -30,9 +30,9 @@ module Scoring
     end
 
     def sort_hand(hand)
-      @hand = {}
-      hand.each { |card| @hand[card.rank] = self.score_table[card.rank] }
-      @hand.sort_by { |key, value| value }.to_h
+      @hand = []
+      hand.each { |card| @hand << [card.rank, self.score_table[card.rank]] }
+      @hand.sort_by { |key, value| value }
     end
 
     def count_score(hand)
