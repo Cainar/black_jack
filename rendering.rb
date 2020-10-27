@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# rubocop:disable Style/Documentation
+# rubocop:disable Metrics/MethodLength
 module Rendering
   def self.included(receiver)
     receiver.extend         ClassMethods
@@ -5,7 +9,6 @@ module Rendering
   end
 
   module ClassMethods
-
     def screen_1
       system('clear')
       show_message(
@@ -86,11 +89,11 @@ module Rendering
         "\n\n"
       )
     end
-
   end
 
   module InstanceMethods
-
   end
-
 end
+
+# rubocop:enable Style/Documentation
+# rubocop:enable Metrics/MethodLength

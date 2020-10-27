@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 require_relative 'deck'
 require_relative 'gamer'
 require_relative 'scoring'
 # require_relative 'standard_set'
 # require_relative 'card'
 
+# Class includes gamers, deck and some actions in process of game.
 class Game
   include Scoring
 
@@ -16,11 +19,11 @@ class Game
   end
 
   def add_gamer(name, bank, type = 'bot')
-    self.gamers << Gamer.new(name, bank, type)
+    gamers << Gamer.new(name, bank, type)
   end
 
   def deal_card(gamer)
-    gamer.recive_card(self.deck.deal_card)
+    gamer.recive_card(deck.deal_card)
   end
 
   def place_bet(gamer, bet)

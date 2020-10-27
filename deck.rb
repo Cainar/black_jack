@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'standard_set'
 require_relative 'card'
 
+# Deck includes cards. The deck can be shuffled
 class Deck
   include StandardSet
 
@@ -16,10 +19,10 @@ class Deck
   end
 
   def shuffle_cards
-    self.cards.shuffle!.reverse!.shuffle!.reverse!.shuffle!
+    cards.shuffle!.reverse!.shuffle!.reverse!.shuffle!
   end
 
   def deal_card
-    self.cards.shift
+    cards.shift
   end
 end

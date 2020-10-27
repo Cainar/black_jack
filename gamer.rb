@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# class for gamers includes name, score, gamer bank and recived cards
 class Gamer
   attr_accessor :name, :score, :hand, :bank
   attr_reader :type
@@ -17,17 +20,17 @@ class Gamer
 
   def show_cards
     @view = []
-    self.hand.each { |card| @view << "[#{card.face}]"}
+    hand.each { |card| @view << "[#{card.face}]" }
     @view.join
   end
 
   def show_cards_back
     @view = []
-    self.hand.each { |card| @view << "[#{card.back}]"}
+    hand.each { |card| @view << "[#{card.back}]" }
     @view.join
   end
 
   def recive_card(card)
-    self.hand << card
+    hand << card
   end
 end
