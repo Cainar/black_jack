@@ -1,8 +1,10 @@
 require_relative 'game'
 require_relative 'bot_action'
+require_relative 'rendering'
 
 class Desk
   include BotAction
+  include Rendering
 
   attr_accessor :game, :gamers, :person, :bot
 
@@ -46,7 +48,7 @@ class Desk
         @BANK_LIMIT,
         'person'
         )
-      @game.add_gamer('SkyNET', @BANK_LIMIT)
+      @game.add_gamer('SkyNET', 10)
     end
 
     def game_action(method)
@@ -89,20 +91,6 @@ class Desk
       else
         @game.break_bank(@winner)
       end
-    end
-
-    def draw_footer
-      system('clear')
-      show_message(
-        "************************************************\n"\
-        "--------------------      ----------------------\n"\
-        "-----------------             ------------------\n"\
-        "----------------   BLACKJACK   -----------------\n"\
-        "-----------------             ------------------\n"\
-        "--------------------      ----------------------\n"\
-        "************************************************\n"\
-        "\n\n"
-      )
     end
 
     def draw_desk(gamer_hand = '', bot_hand = '', gamer_score = '', bot_score = '')
@@ -165,6 +153,8 @@ class Desk
           "     press \"Enter\" to continue\n" \
           "     press \"Esc\" to return to the main menu\n" \
           )
+        screen_1 if @person.bank == 0
+        screen_2 if @bot.bank == 0
         @switch = false if @key == "\e" || @gamers.collect(&:bank).include?(0)
       end while @switch
     end
@@ -173,8 +163,6 @@ class Desk
       begin
         draw_footer
         show_message("  #{header}")
-        show_message
-        show_message
         @key = user_input(
           "     press \"Enter\" to start\n" \
           "     press \"Esc\" to exit\n" \
@@ -191,8 +179,6 @@ class Desk
       begin
         draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
         show_message("  #{header}")
-        show_message
-        show_message
         if @person.hand.size < 3
           @key = user_input(
             "     press \"Enter\" to deal card\n" \
@@ -211,8 +197,6 @@ class Desk
       begin
         draw_desk(@person.show_cards, @bot.show_cards_back, @person.score)
         show_message("  #{header}")
-        show_message
-        show_message
         @key = user_input(
           "     press \"Enter\" to open\n" \
           )
