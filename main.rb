@@ -48,7 +48,7 @@ class Desk
         @BANK_LIMIT,
         'person'
         )
-      @game.add_gamer('SkyNET', 10)
+      @game.add_gamer('SkyNET', @BANK_LIMIT)
     end
 
     def game_action(method)
@@ -157,6 +157,7 @@ class Desk
         screen_2 if @bot.bank == 0
         @switch = false if @key == "\e" || @gamers.collect(&:bank).include?(0)
       end while @switch
+      start
     end
 
     def menu(header = "  Select to continue")
