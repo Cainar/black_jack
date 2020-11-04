@@ -4,13 +4,38 @@
 # rubocop:disable Metrics/MethodLength
 module Rendering
   def self.included(receiver)
-    receiver.extend         ClassMethods
     receiver.send :include, InstanceMethods
   end
 
-  module ClassMethods
-    def screen_1
+  module InstanceMethods
+
+    def show_message(message = '', method = :puts)
+      send(method, message)
+    end
+
+    def draw_desk(game, player, dealer, side = 'face')
+      draw_header
+      show_message(
+        "                   #{dealer.name}: #{dealer.bank}$    \n"\
+        "                ----------------               \n"\
+        "                  #{side == 'face' ? dealer.score : '**'}                 \n"\
+        "             --                  --            \n"\
+        "                  #{dealer.show_cards(side)}                  \n"\
+        "            --                    --           \n"\
+        "                 bank: #{@game.bank}$               \n"\
+        "            --                    --           \n"\
+        "                  #{player.show_cards}                \n"\
+        "             --                  --            \n"\
+        "                  #{player.score}               \n"\
+        "                ----------------               \n"\
+        "                   #{player.name}: #{player.bank}$\n"\
+        "\n\n"
+      )
+    end
+
+    def screen_dealer(dealer)
       system('clear')
+      draw_header
       show_message(
         "                           .. .                  \n" \
         "      -+.               .=:**+=-=-               \n" \
@@ -37,13 +62,13 @@ module Rendering
         "          -+@###%#@##########=%##########- -#.+  \n" \
         "              =@####%+*::*+%###*.           :%.  \n" \
         "                                                 \n" \
-        "            #{@bot.name.upcase} WIN              \n"
+        "            #{dealer.name.upcase} WIN              \n"
       )
-      delay(2)
     end
 
-    def screen_2
+    def screen_player(player)
       system('clear')
+      draw_header
       show_message(
         "                            .............        \n" \
         "                      ...=@%-:*+%%@@@@@@.        \n" \
@@ -71,12 +96,11 @@ module Rendering
         "        ## %#   ##   ##  ##  ##   # ##           \n" \
         "        ##  ##  ######   #####   @##             \n" \
         "                                ##               \n" \
-        "             #{@person.name.upcase} WIN          \n"
+        "             #{player.name.upcase} WIN          \n"
       )
-      delay(2)
     end
 
-    def draw_footer
+    def draw_header
       system('clear')
       show_message(
         "************************************************\n"\
@@ -89,9 +113,6 @@ module Rendering
         "\n\n"
       )
     end
-  end
-
-  module InstanceMethods
   end
 end
 

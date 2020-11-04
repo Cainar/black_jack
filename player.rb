@@ -1,16 +1,14 @@
 # frozen_string_literal: true
 
 # class for gamers includes name, score, gamer bank and recived cards
-class Gamer
+class Player
   attr_accessor :name, :score, :hand, :bank
-  attr_reader :type
 
-  def initialize(name, bank, type)
+  def initialize(name = "Anonymous")
     @name = name
     @score = 0
     @hand = []
     @bank = bank
-    @type = type
   end
 
   def make_bet(bet)
@@ -18,19 +16,24 @@ class Gamer
     bet
   end
 
-  def show_cards
+  def show_cards(side = 'face')
     @view = []
-    hand.each { |card| @view << "[#{card.face}]" }
-    @view.join
-  end
-
-  def show_cards_back
-    @view = []
-    hand.each { |card| @view << "[#{card.back}]" }
+    self.hand.each { |card| @view << "[#{card.method(side.to_sym).call}]" }
     @view.join
   end
 
   def recive_card(card)
     hand << card
+  end
+
+  def fold
+    self.hand = []
+  end
+end
+
+class Dealer < Player
+  def initialize(name = 'SkyNet')
+    @name = name
+    super
   end
 end

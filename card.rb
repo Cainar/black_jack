@@ -8,6 +8,6 @@ class Card
     @rank = rank
     @suit = suit
     @face = "#{rank}#{suit}"
-    @back = "#{back} "
+    @back = "#{back}"
   end
 end
