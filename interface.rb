@@ -39,51 +39,59 @@ class Interface
   def round
     @switch = true
     loop do
-      @game.deck = Deck.new
-      @game.shuffle_cards
-      draw_desk(@game, @player, @dealer, 'back')
-      delay
-      2.times { game_action('deal_card') }
-      game_action('count_score')
-      game_action('place_bet')
+      prepare_game
+
+      dealing
+
+      game_action('place_bet', @game)
 
       turn_menu
-      game_action('count_score')
-
       end_round_menu
-      draw_desk(@game, @player, @dealer, 'back')
-      break_bank
-      draw_desk(@game, @player, @dealer)
 
-      [@player, @dealer].each { |player| player.fold }
       @key = user_input(
         "     press \"Enter\" to continue\n" \
         "     press \"Esc\" to return to the main menu\n" \
       )
-      if @player.bank.zero?
-        screen_dealer(@dealer)
-        delay(1.5)
-      elsif @dealer.bank.zero?
-        screen_player(@player)
-        delay(1.5)
-      end
+      winner_screen
       @switch = false if @key == "\e" || [@player, @dealer].collect(&:bank).include?(0)
       break unless @switch
     end
     start_menu
   end
 
-  def game_action(method)
-    @method = @game.method(method.to_sym)
+  def prepare_game
+    @game.deck = Deck.new
+    @game.deck.shuffle_cards
+    draw_desk(@game, @player, @dealer, false)
+  end
+
+  def dealing
+    2.times { game_action('deal_card', @game.deck) }
+    [@player, @dealer].each { |player| player.count_score }
+    draw_desk(@game, @player, @dealer, false)
+  end
+
+  def winner_screen
+    if @player.bank.zero?
+      screen_dealer(@dealer)
+      delay(1.5)
+    elsif @dealer.bank.zero?
+      screen_player(@player)
+      delay(1.5)
+    end
+  end
+
+  def game_action(method, object)
+    @method = object.method(method.to_sym)
     [@player, @dealer].each do |player|
       @method.call(player)
-      draw_desk(@game, @player, @dealer, 'back')
+      draw_desk(object, @player, @dealer, false)
       delay
     end
   end
 
   def start_menu(header = '  Select to continue')
-    [@player, @dealer].each { |player| player.bank = @game.bank_limit }
+    [@player, @dealer].each { |player| player.bank = Game::Bank_limit }
     loop do
       draw_header
       show_message
@@ -101,7 +109,7 @@ class Interface
 
   def turn_menu(header = '  Select to continue')
     loop do
-      draw_desk(@game, @player, @dealer, 'back')
+      draw_desk(@game, @player, @dealer, false)
       show_message("  #{header}")
       if @player.hand.size < 3
         @key = user_input(
@@ -109,18 +117,19 @@ class Interface
           "     press \"Space\" to skip turn\n" \
         )
       end
-      @game.deal_card(@player) if @key == "\r"
+      @game.deck.deal_card(@player) if @key == "\r"
       if @key == ' ' || @player.hand.size == 3
-        @game.deal_card(@dealer) if @dealer.score < 17
+        @game.deck.deal_card(@dealer) if @dealer.score < 17
       end
       break
       break unless true
     end
+    [@player, @dealer].each { |player| player.count_score }
   end
 
   def end_round_menu(header = '  Select to continue')
     loop do
-      draw_desk(@game, @player, @dealer, 'back')
+      draw_desk(@game, @player, @dealer, false)
       show_message("  #{header}")
       @key = user_input(
         "     press \"Enter\" to open\n" \
@@ -128,6 +137,10 @@ class Interface
       break if @key == "\r"
       break unless true
     end
+    draw_desk(@game, @player, @dealer, false)
+    break_bank
+    draw_desk(@game, @player, @dealer)
+    [@player, @dealer].each { |player| player.fold }
   end
 
   def break_bank
@@ -146,8 +159,8 @@ class Interface
   def decide_winner
     @players = [@player, @dealer]
     if @player.score != @dealer.score
-      case @players.select { |player| player.score > @game.win_score }.size
-      when 2 then @players.min_by { |player| (@game.win_score - player.score).abs }
+      case @players.select { |player| player.score > Game::Win_score }.size
+      when 2 then @players.min_by { |player| (Game::Win_score - player.score).abs }
       when 1 then @players.min_by(&:score)
       when 0 then @players.max_by(&:score)
       end

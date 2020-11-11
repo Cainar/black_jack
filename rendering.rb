@@ -13,14 +13,14 @@ module Rendering
       send(method, message)
     end
 
-    def draw_desk(game, player, dealer, side = 'face')
+    def draw_desk(game, player, dealer, face = true)
       draw_header
       show_message(
         "                   #{dealer.name}: #{dealer.bank}$    \n"\
         "                ----------------               \n"\
-        "                  #{side == 'face' ? dealer.score : '**'}                 \n"\
+        "                  #{face ? dealer.score : '**'}                 \n"\
         "             --                  --            \n"\
-        "                  #{dealer.show_cards(side)}                  \n"\
+        "                  #{dealer.show_cards(face)}                  \n"\
         "            --                    --           \n"\
         "                 bank: #{@game.bank}$               \n"\
         "            --                    --           \n"\
@@ -96,7 +96,7 @@ module Rendering
         "        ## %#   ##   ##  ##  ##   # ##           \n" \
         "        ##  ##  ######   #####   @##             \n" \
         "                                ##               \n" \
-        "             #{player.name.upcase} WIN          \n"
+        "             #{player.name.upcase} WIN           \n"
       )
     end
 

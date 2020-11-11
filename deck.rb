@@ -5,15 +5,23 @@ require_relative 'card'
 class Deck
   attr_reader :cards
 
+  Suits = { hearts: "\u2665", tiles: "\u2666", clovers: "\u2663", pikes: "\u2660" }
+  Ranks = %w[2 3 4 5 6 7 8 9 10 J Q K A]
+
   def initialize
     @cards = []
-    @card_back = '# '
-    @ranks = %w[2 3 4 5 6 7 8 9 10 J Q K A]
-    @suits = { hearts: "\u2665", tiles: "\u2666", clovers: "\u2663", pikes: "\u2660" }
-    @suits.each do |suit, symbol|
-      @ranks.each do |rank|
-        @cards << Card.new(rank, symbol, @card_back)
+    Suits.each do |suit, symbol|
+      Ranks.each do |rank|
+        @cards << Card.new(rank, symbol)
       end
     end
+  end
+
+  def shuffle_cards
+    @cards.shuffle! unless @cards.nil? || @cards.size == 0
+  end
+
+  def deal_card(player)
+    player.recive_card(@cards.shift) unless @cards.nil? || @cards.size == 0
   end
 end

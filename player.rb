@@ -16,18 +16,34 @@ class Player
     bet
   end
 
-  def show_cards(side = 'face')
+  def show_cards(face = true)
     @view = []
-    self.hand.each { |card| @view << "[#{card.method(side.to_sym).call}]" }
-    @view.join
+    if face
+      @hand.each { |card| @view << "[#{card.rank}#{card.suit}]" }
+      @view.join
+    else
+      @hand.each { |card| @view << "[ #]" }
+      @view.join
+    end
   end
 
   def recive_card(card)
-    hand << card
+    @hand << card
   end
 
   def fold
-    self.hand = []
+    @hand = []
+  end
+
+  # подсчет очков, проверяется наличие туза в руке, если туз стоимостью в 11 очков ведет к перебору, то считаем его за 1 очко
+  def count_score
+    @score = 0
+    # проверяет, является ли карта тузом
+    is_ace = ->(rank) { rank == 'A' }
+    @hand.sort_by { |card| Game::Score_table[card.rank] }.each do |card|
+      @score += Game::Score_table[card.rank]
+      @score -= 10 if is_ace.call(card.rank) && @score > Game::Win_score
+    end
   end
 end
 

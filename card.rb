@@ -2,12 +2,10 @@
 
 # class for cards, card have suit, rank and value for scoring.
 class Card
-  attr_accessor :suit, :rank, :face, :back
+  attr_accessor :suit, :rank
 
-  def initialize(rank, suit, back)
+  def initialize(rank, suit)
     @rank = rank
     @suit = suit
-    @face = "#{rank}#{suit}"
-    @back = "#{back}"
   end
 end
