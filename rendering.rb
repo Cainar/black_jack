@@ -18,15 +18,15 @@ module Rendering
       show_message(
         "                   #{dealer.name}: #{dealer.bank}$    \n"\
         "                ----------------               \n"\
-        "                  #{face ? dealer.score : '**'}                 \n"\
+        "                  #{face ? dealer.hand.score : '**'}                 \n"\
         "             --                  --            \n"\
         "                  #{dealer.show_cards(face)}                  \n"\
         "            --                    --           \n"\
-        "                 bank: #{@game.bank}$               \n"\
+        "                 bank: #{game.bank}$               \n"\
         "            --                    --           \n"\
         "                  #{player.show_cards}                \n"\
         "             --                  --            \n"\
-        "                  #{player.score}               \n"\
+        "                  #{player.hand.score}               \n"\
         "                ----------------               \n"\
         "                   #{player.name}: #{player.bank}$\n"\
         "\n\n"
